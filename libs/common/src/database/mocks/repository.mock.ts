@@ -11,5 +11,12 @@ export class MockRepository<
   public deleteOne = jest.fn();
   public find = jest.fn();
   public countDocuments = jest.fn();
-  public startTransaction = jest.fn();
+  public startTransaction = jest
+    .fn()
+    .mockImplementation(async () => new MockSession());
+}
+
+export class MockSession {
+  public commitTransaction = jest.fn();
+  public abortTransaction = jest.fn();
 }

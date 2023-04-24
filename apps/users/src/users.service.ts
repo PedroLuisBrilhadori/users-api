@@ -82,7 +82,7 @@ export class UsersService {
     };
   }
 
-  async getAvatar(userId: string, file: any) {
+  async getAvatar(userId: string, file: any): Promise<{ data: string }> {
     try {
       const { base64 } = await this.avatarRepository.findOne(
         {
@@ -94,7 +94,13 @@ export class UsersService {
       if (base64) return { data: base64 };
     } catch (error) {}
 
-    if (!file) throw new HttpException('Image not uploaded', 400);
+    if (
+      typeof file.originalname !== 'string' ||
+      file.mimetype !== 'image/png' ||
+      file.size < 1 ||
+      !file.buffer
+    )
+      throw new HttpException('Image not uploaded', 400);
 
     const avatar: AvatarDto = {
       originalName: file.originalname,
@@ -108,6 +114,8 @@ export class UsersService {
       userId,
       ...avatar,
     });
+
+    this.logger.log('Avatar created', avatar);
 
     return { data: base64 };
   }
