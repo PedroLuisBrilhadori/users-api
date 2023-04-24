@@ -5,6 +5,7 @@ import {
   Get,
   Param,
   Post,
+  Query,
   UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
@@ -22,8 +23,8 @@ export class UsersController {
   }
 
   @Get()
-  getUsers() {
-    return this.service.getUsers();
+  getUsers(@Query('page') page = 1, @Query('limit') limit = 10) {
+    return this.service.getUsers(page, limit);
   }
 
   @Get(':userId')

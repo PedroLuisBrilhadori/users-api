@@ -1,4 +1,4 @@
-import { HttpException, Inject, Injectable } from '@nestjs/common';
+import { HttpException, Inject, Injectable, Logger } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UsersRepository } from './repositories/users.repository';
 import { AvatarRepository } from './repositories/avatar.repository';
@@ -14,6 +14,8 @@ export class UsersService {
     private avatarRepository: AvatarRepository,
     @Inject(MAILER_SERVICE) private mailerClient: ClientProxy,
   ) {}
+
+  private readonly logger = new Logger(UsersService.name);
 
   async createUser(request: CreateUserDto) {
     const session = await this.userRepository.startTransaction();
@@ -31,6 +33,7 @@ export class UsersService {
       return { data: user };
     } catch (error) {
       await session.abortTransaction();
+      this.logger.warn('user not created', error);
       throw new HttpException(
         'Please wait a few minutes before try again.',
         500,
@@ -38,8 +41,25 @@ export class UsersService {
     }
   }
 
-  async getUsers() {
-    return this.userRepository.find({});
+  async getUsers(page: number, limit: number) {
+    const total = await this.userRepository.countDocuments();
+    const total_pages = Math.ceil(total / limit);
+    const data = await this.userRepository.find(
+      {},
+      {
+        skip: (page - 1) / limit,
+        limit: limit,
+        select: 'id name email',
+      },
+    );
+
+    return {
+      page,
+      data,
+      total,
+      total_pages,
+      per_page: limit,
+    };
   }
 
   async getUser(userId: string) {
