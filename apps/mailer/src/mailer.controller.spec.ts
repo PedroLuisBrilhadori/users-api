@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { MailerController } from './mailer.controller';
 import { MailerService } from './mailer.service';
+import { Email } from '@app/common';
 
 describe('MailerController', () => {
   let mailerController: MailerController;
@@ -14,9 +15,16 @@ describe('MailerController', () => {
     mailerController = app.get<MailerController>(MailerController);
   });
 
-  describe('root', () => {
-    it('should return "Hello World!"', () => {
-      expect(mailerController.getHello()).toBe('Hello World!');
+  describe('sendEmail', () => {
+    it('should send a email when user created', async () => {
+      const email: Email = {
+        title: 'test email',
+        content: 'this is a test email.',
+        name: 'pedro',
+        email: 'pedro@example.co',
+      };
+
+      expect(await mailerController.sendEmail(email)).toBe('email sent');
     });
   });
 });
