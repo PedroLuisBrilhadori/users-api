@@ -12,8 +12,31 @@ services:
       - mongodb-primary
       - mongodb-secondary
       - mongodb-arbiter
+      - mailer
+      - rabbitmq
     ports:
       - '3000:3000'
+
+  mailer:
+    container_name: mailer-service
+    build:
+      context: .
+      dockerfile: ./apps/mailer/Dockerfile
+      target: development
+    command: yarn dev mailer
+    env_file:
+      - ./apps/mailer/.env
+    depends_on:
+      - mongodb-primary
+      - mongodb-secondary
+      - mongodb-arbiter
+      - rabbitmq
+
+  rabbitmq:
+    container_name: rabbitmq
+    image: rabbitmq
+    ports:
+      - '5672:5672'
 
   mongodb-primary:
     container_name: mongodb-primary
