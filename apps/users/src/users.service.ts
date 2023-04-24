@@ -6,6 +6,8 @@ import { AvatarDto } from './dto/create-avatar.dto';
 import { MAILER_SERVICE } from './constants/service';
 import { ClientProxy } from '@nestjs/microservices';
 import { lastValueFrom } from 'rxjs';
+import { User } from './schemas/user.schema';
+import { Email } from '@app/common';
 
 @Injectable()
 export class UsersService {
@@ -21,16 +23,24 @@ export class UsersService {
     const session = await this.userRepository.startTransaction();
 
     try {
-      const user = await this.userRepository.create(request, { session });
+      const user = (await this.userRepository.create(request, {
+        session,
+      })) as User;
+
+      const email: Email = {
+        ...request,
+        title: `Confirm your email`,
+        content: `Hello ${request.name}! \nPlease, confirm your email!`,
+      };
 
       await lastValueFrom(
         this.mailerClient.emit('user_created', {
-          request,
+          email,
         }),
       );
 
       await session.commitTransaction();
-      return { data: user };
+      return { ...user, createdAt: new Date() };
     } catch (error) {
       await session.abortTransaction();
       this.logger.warn('user not created', error);
@@ -44,14 +54,14 @@ export class UsersService {
   async getUsers(page: number, limit: number) {
     const total = await this.userRepository.countDocuments();
     const total_pages = Math.ceil(total / limit);
-    const data = await this.userRepository.find(
+    const data = (await this.userRepository.find(
       {},
       {
         skip: (page - 1) / limit,
         limit: limit,
         select: 'id name email',
       },
-    );
+    )) as User[];
 
     return {
       page,
@@ -63,9 +73,13 @@ export class UsersService {
   }
 
   async getUser(userId: string) {
-    return this.userRepository.findOne({
+    const user = (await this.userRepository.findOne({
       _id: userId,
-    });
+    })) as User;
+
+    return {
+      data: user,
+    };
   }
 
   async getAvatar(userId: string, file: any) {

@@ -2,7 +2,7 @@ import { HttpException, Logger, NotFoundException } from '@nestjs/common';
 import { FilterQuery, Model, Types, SaveOptions, Connection } from 'mongoose';
 import { AbstractDocument } from './schema.abstract';
 
-interface findOptions {
+export interface FindOptions {
   skip: number;
   limit: number;
   select: string;
@@ -57,7 +57,7 @@ export abstract class AbstractRepository<TDocument extends AbstractDocument> {
     }
   }
 
-  async find(filterQuery: FilterQuery<TDocument>, options?: findOptions) {
+  async find(filterQuery: FilterQuery<TDocument>, options?: FindOptions) {
     if (!options) return await this.model.find(filterQuery, {}, { lean: true });
 
     return await this.model
