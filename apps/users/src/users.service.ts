@@ -1,18 +1,41 @@
-import { HttpException, Injectable } from '@nestjs/common';
+import { HttpException, Inject, Injectable } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UsersRepository } from './repositories/users.repository';
 import { AvatarRepository } from './repositories/avatar.repository';
 import { AvatarDto } from './dto/create-avatar.dto';
+import { MAILER_SERVICE } from './constants/service';
+import { ClientProxy } from '@nestjs/microservices';
+import { lastValueFrom } from 'rxjs';
 
 @Injectable()
 export class UsersService {
   constructor(
     private userRepository: UsersRepository,
     private avatarRepository: AvatarRepository,
+    @Inject(MAILER_SERVICE) private mailerClient: ClientProxy,
   ) {}
 
   async createUser(request: CreateUserDto) {
-    return this.userRepository.create(request);
+    const session = await this.userRepository.startTransaction();
+
+    try {
+      const user = await this.userRepository.create(request, { session });
+
+      await lastValueFrom(
+        this.mailerClient.emit('user_created', {
+          request,
+        }),
+      );
+
+      await session.commitTransaction();
+      return { data: user };
+    } catch (error) {
+      await session.abortTransaction();
+      throw new HttpException(
+        'Please wait a few minutes before try again.',
+        500,
+      );
+    }
   }
 
   async getUsers() {

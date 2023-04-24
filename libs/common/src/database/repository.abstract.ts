@@ -1,11 +1,14 @@
-import { Logger, NotFoundException } from '@nestjs/common';
-import { FilterQuery, Model, Types, SaveOptions } from 'mongoose';
+import { HttpException, Logger, NotFoundException } from '@nestjs/common';
+import { FilterQuery, Model, Types, SaveOptions, Connection } from 'mongoose';
 import { AbstractDocument } from './schema.abstract';
 
 export abstract class AbstractRepository<TDocument extends AbstractDocument> {
   protected abstract readonly logger: Logger;
 
-  constructor(protected readonly model: Model<TDocument>) {}
+  constructor(
+    protected readonly model: Model<TDocument>,
+    private readonly connection: Connection,
+  ) {}
 
   async create(
     document: Omit<TDocument, '_id'>,
@@ -41,13 +44,20 @@ export abstract class AbstractRepository<TDocument extends AbstractDocument> {
       return await this.model.deleteOne(document);
     } catch (error) {
       this.logger.warn('Error or delete Document', document);
-      throw new NotFoundException(
+      throw new HttpException(
         'Please wait a few minutes before try again.',
+        500,
       );
     }
   }
 
   async find(filterQuery: FilterQuery<TDocument>) {
     return this.model.find(filterQuery, {}, { lean: true });
+  }
+
+  async startTransaction() {
+    const session = await this.connection.startSession();
+    session.startTransaction();
+    return session;
   }
 }

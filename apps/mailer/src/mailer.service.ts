@@ -1,8 +1,10 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 
 @Injectable()
 export class MailerService {
-  sendEmail(email: string): string {
-    return 'email sent';
+  private readonly logger = new Logger(MailerService.name);
+
+  sendEmail(data: any) {
+    this.logger.log('email sent', data);
   }
 }
