@@ -1,3 +1,6 @@
+/* eslint no-use-before-define: 0 */ // --> OFF
+/* eslint no-unused-vars: 0 */ // --> OFF
+/* eslint no-empty-function: 0 */ // --> OFF
 import { Logger } from '@nestjs/common';
 import { AbstractRepository } from '../repository.abstract';
 import { AbstractDocument } from '../schema.abstract';

@@ -8,7 +8,6 @@ import { Avatar } from '../schemas/avatar.schema';
 import { UsersRepository } from '../repositories/users.repository';
 import { AvatarRepository } from '../repositories/avatar.repository';
 import { MAILER_SERVICE } from '../constants/service';
-import { HttpException } from '@nestjs/common';
 
 describe('UsersController', () => {
   let controller: UsersController;
