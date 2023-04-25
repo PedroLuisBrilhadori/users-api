@@ -164,7 +164,7 @@ describe('UsersController (e2e)', () => {
       expect(body.message).toBe('Image not uploaded');
     });
 
-    it('should throw an error without image ', async () => {
+    it('should throw an error without avatar image', async () => {
       const { statusCode, body } = await request(app.getHttpServer()).get(
         `/api/users/${userId}/avatar`,
       );

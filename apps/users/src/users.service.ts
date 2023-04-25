@@ -95,6 +95,7 @@ export class UsersService {
     } catch (error) {}
 
     if (
+      !file ||
       typeof file.originalname !== 'string' ||
       file.mimetype !== 'image/png' ||
       file.size < 1 ||
