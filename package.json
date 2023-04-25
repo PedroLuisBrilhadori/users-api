@@ -18,7 +18,11 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./apps/users/test/jest-e2e.json --runInBand=true",
-    "docker:e2e": "docker compose -f ./docker-e2e-compose.yml up -d --build -V"
+    "docker:e2e": "docker compose -f ./docker-e2e-compose.yml up -d --build -V",
+    "docker:e2e:remove": "docker compose -f ./docker-e2e-compose.yml stop && docker compose -f ./docker-e2e-compose.yml rm",
+    "docker:dev": "docker compose -f ./docker-compose.yml up -d --build -V",
+    "docker:dev:stop": "docker compose -f ./docker-compose.yml stop",
+    "docker:dev:remove": "yarn docker:dev:stop && docker compose -f ./docker-compose.yml rm"
   },
   "dependencies": {
     "@nestjs/common": "^9.0.0",

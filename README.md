@@ -21,11 +21,13 @@ $ yarn install
 
 ```bash
 # development
-yarn docker:dev
+$ yarn docker:dev
+```
 
-# production
-yarn docker:prod
+## Stop the app
 
+```bash
+$ yarn docker:dev:remove
 ```
 
 ## Test
@@ -36,6 +38,9 @@ $ yarn test
 
 # e2e tests
 $ yarn docker:e2e
+
+# stop e2e tests
+$ yarn docker:e2e:remove
 
 # test coverage
 $ yarn test:cov
