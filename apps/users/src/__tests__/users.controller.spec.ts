@@ -1,13 +1,14 @@
 import { Test } from '@nestjs/testing';
 import { MockRepository } from '@app/common';
-import { UsersController } from './users.controller';
-import { UsersService } from './users.service';
+import { UsersController } from '../users.controller';
+import { UsersService } from '../users.service';
 import { Types } from 'mongoose';
-import { User } from './schemas/user.schema';
-import { Avatar } from './schemas/avatar.schema';
-import { UsersRepository } from './repositories/users.repository';
-import { AvatarRepository } from './repositories/avatar.repository';
-import { MAILER_SERVICE } from './constants/service';
+import { User } from '../schemas/user.schema';
+import { Avatar } from '../schemas/avatar.schema';
+import { UsersRepository } from '../repositories/users.repository';
+import { AvatarRepository } from '../repositories/avatar.repository';
+import { MAILER_SERVICE } from '../constants/service';
+import { HttpException } from '@nestjs/common';
 
 describe('UsersController', () => {
   let controller: UsersController;
@@ -147,9 +148,16 @@ describe('UsersController', () => {
     it('should delete an avatar', async () => {
       const userId = '123';
 
-      jest.spyOn(service, 'deleteAvatar').mockImplementation();
+      const result = {
+        acknowledged: true,
+        deletedCount: 1,
+      };
 
-      expect(await controller.deleteAvatar({ userId })).toBeUndefined();
+      jest
+        .spyOn(service, 'deleteAvatar')
+        .mockImplementation(async () => result);
+
+      expect(await controller.deleteAvatar({ userId })).toBe(result);
     });
   });
 });
