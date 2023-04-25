@@ -32,7 +32,16 @@ export abstract class AbstractRepository<TDocument> {
     filterQuery: FilterQuery<TDocument>,
     verify = true,
   ): Promise<TDocument> {
-    const document = await this.model.findOne(filterQuery, {}, { lean: true });
+    let document: TDocument;
+
+    try {
+      document = await this.model.findOne(filterQuery, {}, { lean: true });
+    } catch (error) {
+      throw new HttpException(
+        'Please wait a few minutes before try again.',
+        500,
+      );
+    }
 
     if (!document && verify) {
       this.logger.warn('Document not found with filterQuery', filterQuery);

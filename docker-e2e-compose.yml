@@ -1,12 +1,12 @@
 services:
   users:
-    container_name: users-api-e2e
+    container_name: users-api
     restart: always
     build:
       context: .
       dockerfile: ./apps/users/Dockerfile
       target: development
-    command: sh -c 'sleep 15s && yarn test:e2e'
+    command: yarn test:e2e
     env_file:
       - ./apps/users/.env
     depends_on:
@@ -20,7 +20,7 @@ services:
       - '3000:3000'
 
   mailer:
-    container_name: mailer-service-e2e
+    container_name: mailer-service
     build:
       context: .
       dockerfile: ./apps/mailer/Dockerfile
@@ -43,7 +43,7 @@ services:
         condition: service_healthy
 
   rabbitmq:
-    container_name: rabbitmq-e2e
+    container_name: rabbitmq
     image: rabbitmq
     ports:
       - '5672:5672'
@@ -57,13 +57,15 @@ services:
       - ./volumes/rabbit-healthy.sh:/usr/app/rabbit/healthy.sh
 
   mongodb-primary:
-    container_name: mongodb-primary-e2e
+    container_name: mongodb-primary
     image: docker.io/bitnami/mongodb:5.0
     environment:
       - MONGODB_ADVERTISED_HOSTNAME=mongodb-primary
       - MONGODB_REPLICA_SET_MODE=primary
       - MONGODB_ROOT_PASSWORD=password123
       - MONGODB_REPLICA_SET_KEY=replicasetkey123
+    ports:
+      - '27017:27017'
     volumes:
       - 'mongodb_master_data:/bitnami/mongodb'
     healthcheck:
@@ -72,11 +74,9 @@ services:
       timeout: 15s
       retries: 5
       start_period: 20s
-    ports:
-      - '27017:27017'
 
   mongodb-secondary:
-    container_name: mongodb-secondary-e2e
+    container_name: mongodb-secondary
     image: docker.io/bitnami/mongodb:5.0
     depends_on:
       - mongodb-primary
@@ -88,7 +88,7 @@ services:
       - MONGODB_REPLICA_SET_KEY=replicasetkey123
 
   mongodb-arbiter:
-    container_name: mongodb-arbiter-e2e
+    container_name: mongodb-arbiter
     image: docker.io/bitnami/mongodb:5.0
     depends_on:
       - mongodb-primary
