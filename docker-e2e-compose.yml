@@ -6,15 +6,16 @@ services:
       context: .
       dockerfile: ./apps/users/Dockerfile
       target: development
-    command: yarn test:e2e
+    command: sh -c 'sleep 15s && yarn test:e2e'
     env_file:
       - ./apps/users/.env
     depends_on:
-      - mongodb-primary
-      - mongodb-secondary
-      - mongodb-arbiter
-      - mailer
-      - rabbitmq
+      mongodb-primary:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      mailer:
+        condition: service_healthy
     ports:
       - '3000:3000'
 
@@ -27,17 +28,33 @@ services:
     command: yarn dev mailer
     env_file:
       - ./apps/mailer/.env
+    ports:
+      - '3001:3001'
+    healthcheck:
+      test: ['CMD', 'wget', '-qO- ', 'http://localhost:3001/mailer/health']
+      interval: 15s
+      timeout: 15s
+      retries: 5
+      start_period: 15s
     depends_on:
-      - mongodb-primary
-      - mongodb-secondary
-      - mongodb-arbiter
-      - rabbitmq
+      mongodb-primary:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
 
   rabbitmq:
     container_name: rabbitmq-e2e
     image: rabbitmq
     ports:
       - '5672:5672'
+    healthcheck:
+      test: ['CMD', '/bin/bash', '/usr/app/rabbit/healthy.sh']
+      interval: 15s
+      timeout: 15s
+      retries: 5
+      start_period: 20s
+    volumes:
+      - ./volumes/rabbit-healthy.sh:/usr/app/rabbit/healthy.sh
 
   mongodb-primary:
     container_name: mongodb-primary-e2e
@@ -49,6 +66,12 @@ services:
       - MONGODB_REPLICA_SET_KEY=replicasetkey123
     volumes:
       - 'mongodb_master_data:/bitnami/mongodb'
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongo mongodb://root:password123@localhost:27017/ --quiet
+      interval: 15s
+      timeout: 15s
+      retries: 5
+      start_period: 20s
     ports:
       - '27017:27017'
 

@@ -8,5 +8,6 @@ async function bootstrap() {
   app.connectMicroservice(rmqService.getOptions('MAILER'));
 
   await app.startAllMicroservices();
+  await app.listen(3001);
 }
 bootstrap();
